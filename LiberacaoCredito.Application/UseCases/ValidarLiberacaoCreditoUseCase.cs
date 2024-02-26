@@ -2,31 +2,42 @@
 using LiberacaoCredito.Application.Abstractions.Queries;
 using LiberacaoCredito.Application.InputPorts;
 using LiberacaoCredito.Application.UseCases.Interfaces;
+using LiberacaoCredito.Domain.Enums;
 using LiberacaoCredito.Domain.Models;
 
 namespace LiberacaoCredito.Application.UseCases
 {
     public class ValidarLiberacaoCreditoUseCase : IValidarLiberacaoCreditoUseCase
     {
-        private readonly IObterLinhaCredito _obterCredito;
+        private readonly IObterLinhaCreditoQuery _obterCredito;
         private readonly ISolicitacaoLiberacaoCreditoRepository _solicitacaoLiberacaoCreditoRepository;
 
-        public ValidarLiberacaoCreditoUseCase(ISolicitacaoLiberacaoCreditoRepository solicitacaoLiberacaoCreditoRepository, IObterLinhaCredito obterCredito)
+        public ValidarLiberacaoCreditoUseCase(ISolicitacaoLiberacaoCreditoRepository solicitacaoLiberacaoCreditoRepository, IObterLinhaCreditoQuery obterCredito)
         {
             _obterCredito = obterCredito;
             _solicitacaoLiberacaoCreditoRepository = solicitacaoLiberacaoCreditoRepository;
         }
 
-        public SolicitacaoLiberacaoCreditoOutput Validar(SolicitacaoLiberacaoCreditoInput liberacaoCreditoInput)
+        public async Task<SolicitacaoLiberacaoCreditoOutput> ValidarAsync(SolicitacaoLiberacaoCreditoInput liberacaoCreditoInput)
         {
-            var credito = _obterCredito.SelecionarPorId(liberacaoCreditoInput.IdCredito);
+            var credito = await _obterCredito.SelecionarPorIdAsync(liberacaoCreditoInput.IdCredito);
+
+            if (credito ==null)
+            {
+                return BuildOutput(StatusSolicitacaoLiberacaoCredito.Recusado, 0, 0, new List<string> { "Linha de crédito inválida" });
+            }
 
             var solicitacaoLiberacaoCredito = new SolicitacaoLiberacaoCredito(liberacaoCreditoInput.CpfCnpj,credito, liberacaoCreditoInput.ValorSolicitado, liberacaoCreditoInput.QuantidadeParcelas, liberacaoCreditoInput.DataPrimeiroVencimento);
             
-            var solicitacaoLiberacaoCreditoNew = _solicitacaoLiberacaoCreditoRepository.Inserir(solicitacaoLiberacaoCredito);
+            var solicitacaoLiberacaoCreditoNew = await _solicitacaoLiberacaoCreditoRepository.InserirAsync(solicitacaoLiberacaoCredito);
 
-            return new SolicitacaoLiberacaoCreditoOutput(solicitacaoLiberacaoCreditoNew.Status, solicitacaoLiberacaoCreditoNew.ValorFinal, solicitacaoLiberacaoCreditoNew.ValorJuros, solicitacaoLiberacaoCredito.Mensagens);
-
+            return BuildOutput(solicitacaoLiberacaoCreditoNew.Status, solicitacaoLiberacaoCreditoNew.ValorFinal, solicitacaoLiberacaoCreditoNew.ValorJuros, solicitacaoLiberacaoCreditoNew.Mensagens);
         }               
+
+        private SolicitacaoLiberacaoCreditoOutput BuildOutput(StatusSolicitacaoLiberacaoCredito status, decimal valorFinal, decimal valorJuros, ICollection<string> mensagens) 
+        {
+            return new SolicitacaoLiberacaoCreditoOutput(status, valorFinal, valorJuros, mensagens);
+
+        }
     }
 }

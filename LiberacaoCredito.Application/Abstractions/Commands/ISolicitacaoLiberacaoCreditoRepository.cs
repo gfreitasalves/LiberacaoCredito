@@ -9,6 +9,6 @@ namespace LiberacaoCredito.Application.Abstractions.Commands
 {
     public interface ISolicitacaoLiberacaoCreditoRepository
     {
-        SolicitacaoLiberacaoCredito Inserir(SolicitacaoLiberacaoCredito solicitacaoLiberacaoCredito);
+        Task<SolicitacaoLiberacaoCredito> InserirAsync(SolicitacaoLiberacaoCredito solicitacaoLiberacaoCredito);
     }
 }

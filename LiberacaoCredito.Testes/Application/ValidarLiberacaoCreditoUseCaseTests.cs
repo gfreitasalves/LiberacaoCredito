@@ -4,11 +4,7 @@ using LiberacaoCredito.Application.InputPorts;
 using LiberacaoCredito.Application.UseCases;
 using LiberacaoCredito.Domain.Enums;
 using LiberacaoCredito.Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using System.Runtime.CompilerServices;
 
 namespace LiberacaoCredito.Testes.Application
 {
@@ -22,7 +18,7 @@ namespace LiberacaoCredito.Testes.Application
         [DataRow("18043554021", "999999", 50, 1, "2", "1000000", "1000000", "1", "15000", 72, 5, 40, 15, StatusSolicitacaoLiberacaoCredito.Recusado, "Data primeiro vencimento inválida.")]
         [DataRow("10000000100", "10000", 10, 20, "2", "1000000", "1000000", "1", "15000", 72, 5, 40, 15, StatusSolicitacaoLiberacaoCredito.Recusado, "Cpf/Cnpj inválido.")]
         [DataRow("44672272000103", "1000", 10, 20, "2", "1000000", "1000000", "1", "15000", 72, 5, 40, 15, StatusSolicitacaoLiberacaoCredito.Recusado, "Intervalo de valor inválido.")]
-        public void QuanadoValidarDeveRetornarAprovadoReprovado(
+        public async Task QuanadoValidarDeveRetornarAprovadoReprovado(
                             string cpfCnpj,
                             string valorSolicitadoStr,
                             int quantidadeParcelas,
@@ -58,16 +54,16 @@ namespace LiberacaoCredito.Testes.Application
 
             DateTime dataPrimeiroVencimento = DateTime.Now.AddDays(addDaysDataPrimeiroVencimento);
 
-            var solicitacaoLiberacaoCredito = new SolicitacaoLiberacaoCredito(cpfCnpj,linhaCredito, valorSolicitado, quantidadeParcelas,dataPrimeiroVencimento);
+            var solicitacaoLiberacaoCredito = new SolicitacaoLiberacaoCredito(cpfCnpj, linhaCredito, valorSolicitado, quantidadeParcelas, dataPrimeiroVencimento);
 
             var solicitacaoLiberacaoCreditoRepositoryMock = new Mock<ISolicitacaoLiberacaoCreditoRepository>();
-            var obterLinhaCreditoMock = new Mock<IObterLinhaCredito>();
+            var obterLinhaCreditoMock = new Mock<IObterLinhaCreditoQuery>();
 
-            solicitacaoLiberacaoCreditoRepositoryMock.Setup(x => x.Inserir(It.IsAny<SolicitacaoLiberacaoCredito>()))
-                .Returns(solicitacaoLiberacaoCredito);
-            obterLinhaCreditoMock.Setup(x => x.SelecionarPorId(It.IsAny<Guid>())).Returns(linhaCredito);
+            solicitacaoLiberacaoCreditoRepositoryMock.Setup(x => x.InserirAsync(It.IsAny<SolicitacaoLiberacaoCredito>()))
+                .ReturnsAsync(solicitacaoLiberacaoCredito);
+            obterLinhaCreditoMock.Setup(x => x.SelecionarPorIdAsync(It.IsAny<Guid>())).ReturnsAsync(linhaCredito);
 
-        var validarLiberacaoCreditoUseCase = new ValidarLiberacaoCreditoUseCase(solicitacaoLiberacaoCreditoRepositoryMock.Object, obterLinhaCreditoMock.Object);
+            var validarLiberacaoCreditoUseCase = new ValidarLiberacaoCreditoUseCase(solicitacaoLiberacaoCreditoRepositoryMock.Object, obterLinhaCreditoMock.Object);
 
             //Act
 
@@ -80,13 +76,13 @@ namespace LiberacaoCredito.Testes.Application
                 DataPrimeiroVencimento = dataPrimeiroVencimento
             };
 
-            var result = validarLiberacaoCreditoUseCase.Validar(input);
+            var result = await validarLiberacaoCreditoUseCase.ValidarAsync(input);
 
             //Assert            
             result.Should().NotBeNull();
-            result.Status.Should().Be(status);
+            result.Status.Should().Be(status.ToString());
 
-            if (result.Status == StatusSolicitacaoLiberacaoCredito.Recusado)
+            if (result.Status == StatusSolicitacaoLiberacaoCredito.Recusado.ToString())
             {
                 result.Mensagens.Should().NotBeNull();
                 result.Mensagens.Should().Contain(mensagemResultado);

@@ -1,15 +1,17 @@
 ﻿
 using LiberacaoCredito.Domain.Enums;
-using LiberacaoCredito.Domain.ValueObjects;
 
 namespace LiberacaoCredito.Domain.Models
-
 {
     public class SolicitacaoLiberacaoCredito : IEntity
     {
+        public SolicitacaoLiberacaoCredito()
+        {
+            Credito = new LinhaCredito();
+        }
         public SolicitacaoLiberacaoCredito(string cpfCnpj, LinhaCredito credito, decimal valorSolicitado, int quantidadeParcelas, DateTime dataPrimeiroVencimento)
         {
-            CpfCnpj = new CpfCnpjVo(cpfCnpj);
+            CpfCnpj = cpfCnpj;
             Credito = credito;
             Status = StatusSolicitacaoLiberacaoCredito.Aprovado;
             ValorSolicitado = valorSolicitado;
@@ -17,10 +19,13 @@ namespace LiberacaoCredito.Domain.Models
             DataPrimeiroVencimento = dataPrimeiroVencimento;
 
             ValidarRegras();
+
+            CalcularValores();
         }
 
         public Guid Id { get; }
-        public CpfCnpjVo CpfCnpj { get; private set; }
+        public string CpfCnpj { get; private set; } = string.Empty;
+        public TipoCpfCnpjEnum TipoCpfCnpj { get; private set; }
         public StatusSolicitacaoLiberacaoCredito Status { get; private set; }
         public decimal ValorSolicitado { get; private set; }
         public int QuantidadeParcelas { get; private set; }
@@ -35,13 +40,13 @@ namespace LiberacaoCredito.Domain.Models
         {
             if (Credito != null)
             {
-                if (CpfCnpj.Tipo == CpfCnpjVo.CpfCnpj.Invalido)
+                if (TipoCpfCnpj == TipoCpfCnpjEnum.Invalido)
                 {
                     Mensagens.Add("Cpf/Cnpj inválido.");
                 }
 
                 Status =
-                    CpfCnpj.Tipo != CpfCnpjVo.CpfCnpj.Invalido &&
+                    TipoCpfCnpj != TipoCpfCnpjEnum.Invalido &&
                     Credito != null &&
                     ValidarIntervaloValor() &&
                     ValidarParcelas() &&
@@ -58,15 +63,21 @@ namespace LiberacaoCredito.Domain.Models
             }
         }
 
+        private void CalcularValores()
+        {
+            ValorJuros = (ValorSolicitado * (((Credito.Taxa/100) / 12) * QuantidadeParcelas));
+            ValorFinal = ValorSolicitado + ValorJuros;
+        }
+
         private bool ValidarIntervaloValor()
         {
             var isValid = false;
 
-            if (CpfCnpj.Tipo == CpfCnpjVo.CpfCnpj.CPF)
+            if (TipoCpfCnpj == TipoCpfCnpjEnum.CPF)
             {
                 isValid = ValorSolicitado >= Credito.ValorMinimoPessoaFisica && ValorSolicitado <= Credito.ValorMaximoPessoaFisica;
             }
-            else if (CpfCnpj.Tipo == CpfCnpjVo.CpfCnpj.CNPJ)
+            else if (TipoCpfCnpj == TipoCpfCnpjEnum.CNPJ)
             {
                 isValid = ValorSolicitado >= Credito.ValorMinimoPessoaJuridica && ValorSolicitado <= Credito.ValorMaximoPessoaJuridica;
             }
@@ -95,6 +106,93 @@ namespace LiberacaoCredito.Domain.Models
                 Mensagens.Add("Data primeiro vencimento inválida.");
 
             return isValid;
+        }
+
+        public void ValidateCpfCnpj(string number)
+        {
+            if (IsCpf(number))
+                TipoCpfCnpj = TipoCpfCnpjEnum.CPF;
+            else if (IsCnpj(number))
+                TipoCpfCnpj = TipoCpfCnpjEnum.CNPJ;
+        }
+        private static bool IsCpf(string cpf)
+        {
+            int[] multiplicador1 = new int[9] { 10, 9, 8, 7, 6, 5, 4, 3, 2 };
+            int[] multiplicador2 = new int[10] { 11, 10, 9, 8, 7, 6, 5, 4, 3, 2 };
+
+            cpf = cpf.Trim().Replace(".", "").Replace("-", "");
+            if (cpf.Length != 11)
+                return false;
+
+            for (int j = 0; j < 10; j++)
+                if (j.ToString().PadLeft(11, char.Parse(j.ToString())) == cpf)
+                    return false;
+
+            string tempCpf = cpf.Substring(0, 9);
+            int soma = 0;
+
+            for (int i = 0; i < 9; i++)
+                soma += int.Parse(tempCpf[i].ToString()) * multiplicador1[i];
+
+            int resto = soma % 11;
+            if (resto < 2)
+                resto = 0;
+            else
+                resto = 11 - resto;
+
+            string digito = resto.ToString();
+            tempCpf = tempCpf + digito;
+            soma = 0;
+            for (int i = 0; i < 10; i++)
+                soma += int.Parse(tempCpf[i].ToString()) * multiplicador2[i];
+
+            resto = soma % 11;
+            if (resto < 2)
+                resto = 0;
+            else
+                resto = 11 - resto;
+
+            digito = digito + resto.ToString();
+
+            return cpf.EndsWith(digito);
+        }
+
+        private static bool IsCnpj(string cnpj)
+        {
+            int[] multiplicador1 = new int[12] { 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2 };
+            int[] multiplicador2 = new int[13] { 6, 5, 4, 3, 2, 9, 8, 7, 6, 5, 4, 3, 2 };
+
+            cnpj = cnpj.Trim().Replace(".", "").Replace("-", "").Replace("/", "");
+            if (cnpj.Length != 14)
+                return false;
+
+            string tempCnpj = cnpj.Substring(0, 12);
+            int soma = 0;
+
+            for (int i = 0; i < 12; i++)
+                soma += int.Parse(tempCnpj[i].ToString()) * multiplicador1[i];
+
+            int resto = (soma % 11);
+            if (resto < 2)
+                resto = 0;
+            else
+                resto = 11 - resto;
+
+            string digito = resto.ToString();
+            tempCnpj = tempCnpj + digito;
+            soma = 0;
+            for (int i = 0; i < 13; i++)
+                soma += int.Parse(tempCnpj[i].ToString()) * multiplicador2[i];
+
+            resto = (soma % 11);
+            if (resto < 2)
+                resto = 0;
+            else
+                resto = 11 - resto;
+
+            digito = digito + resto.ToString();
+
+            return cnpj.EndsWith(digito);
         }
     }
 }

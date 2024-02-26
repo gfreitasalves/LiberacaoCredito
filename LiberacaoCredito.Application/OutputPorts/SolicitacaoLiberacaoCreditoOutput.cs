@@ -6,13 +6,13 @@ namespace LiberacaoCredito.Application.InputPorts
     {
         public SolicitacaoLiberacaoCreditoOutput(StatusSolicitacaoLiberacaoCredito status, decimal valorFinal, decimal valorJuros, ICollection<string> mensagens)
         {
-            Status = status;
+            Status = status.ToString();
             ValorFinal = valorFinal;
             ValorJuros = valorJuros;
             Mensagens = mensagens;
         }
 
-        public StatusSolicitacaoLiberacaoCredito Status { get; private set; }
+        public string Status { get; private set; }
         public decimal ValorFinal { get; private set; }
         public decimal ValorJuros { get; private set; }
 

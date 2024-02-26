@@ -1,0 +1,32 @@
+@LiberacaoCredito.Api_HostAddress = http://localhost:5162
+
+GET {{LiberacaoCredito.Api_HostAddress}}/linhaCredito/
+Accept: application/json
+
+###
+
+//Aprovado
+POST {{LiberacaoCredito.Api_HostAddress}}/LiberacaoCredito/
+Content-Type: application/json
+
+{
+  "idCredito": "4052f699-276a-41b4-a3c6-e0de011c7380",
+  "cpfCnpj": "18043554021",
+  "valorSolicitado": 10000,
+  "quantidadeParcelas": 24,
+  "dataPrimeiroVencimento": "2024-03-26"
+}
+###
+
+//Recusado
+POST {{LiberacaoCredito.Api_HostAddress}}/LiberacaoCredito/
+Content-Type: application/json
+
+{
+  "idCredito": "4052f699-276a-41b4-a3c6-e0de011c7380",
+  "cpfCnpj": "18043554021",
+  "valorSolicitado": 10000010,
+  "quantidadeParcelas": 24,
+  "dataPrimeiroVencimento": "2024-03-26"
+}
+###

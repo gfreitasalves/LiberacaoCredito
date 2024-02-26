@@ -64,21 +64,5 @@ namespace LiberacaoCredito.Testes
             }
 
         }
-
-        [TestMethod]
-        public void QuandoEstanciarComLinhadeCreditoNulaDeveRecusar()
-        {
-            //Arrange
-            //Act
-            var solicitacaoCredito = new SolicitacaoLiberacaoCredito("18043554021", null, 10000, 24, DateTime.Now.AddDays(15));
-
-
-            //Assert
-            solicitacaoCredito.Should().NotBeNull();
-            solicitacaoCredito.Status.Should().Be(StatusSolicitacaoLiberacaoCredito.Recusado);
-
-            solicitacaoCredito.Mensagens.Should().NotBeNull();
-            solicitacaoCredito.Mensagens.Should().Contain("Linha de credito inválida.");
-        }
     }
 }

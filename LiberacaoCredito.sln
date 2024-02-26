@@ -9,6 +9,10 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "LiberacaoCredito.Applicatio
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiberacaoCredito.Testes", "LiberacaoCredito.Testes\LiberacaoCredito.Testes.csproj", "{A0726296-F678-4D2E-A52E-AD949E5D834D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiberacaoCredito.Infrastructure.Database", "LiberacaoCredito.Infrastructure.Database\LiberacaoCredito.Infrastructure.Database.csproj", "{BFCEFF0B-C15F-4877-9294-BD15D7390BF8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "LiberacaoCredito.Api", "LiberacaoCredito.Api\LiberacaoCredito.Api.csproj", "{023F1FE2-7A31-498B-87A3-6E0303FB4C3D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{A0726296-F678-4D2E-A52E-AD949E5D834D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A0726296-F678-4D2E-A52E-AD949E5D834D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A0726296-F678-4D2E-A52E-AD949E5D834D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BFCEFF0B-C15F-4877-9294-BD15D7390BF8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BFCEFF0B-C15F-4877-9294-BD15D7390BF8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BFCEFF0B-C15F-4877-9294-BD15D7390BF8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BFCEFF0B-C15F-4877-9294-BD15D7390BF8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{023F1FE2-7A31-498B-87A3-6E0303FB4C3D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{023F1FE2-7A31-498B-87A3-6E0303FB4C3D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{023F1FE2-7A31-498B-87A3-6E0303FB4C3D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{023F1FE2-7A31-498B-87A3-6E0303FB4C3D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
